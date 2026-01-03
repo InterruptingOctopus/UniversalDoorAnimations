@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.interruptingoctopus.inclinations.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "universaldooranimations.refmap.json",
+  "mixins": [
+    "BlockEntityTypeMixin",
+    "BlockRenderMixin",
+    "DoorBlockMixin",
+    "TrapDoorBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
