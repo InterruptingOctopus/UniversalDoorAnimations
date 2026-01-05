@@ -102,7 +102,7 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
         float pivotX = 0.0f;
         float pivotZ = 0.0f;
 
-        // Calculate the base pivot point (the hinge corner)
+        // 1. Calculate the base pivot point at the correct hinge corner
         switch (facing) {
             case NORTH:
                 pivotZ = 1.0f;
@@ -122,25 +122,21 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
                 break;
         }
 
-        // Define offsets in pixels
+        // 2. Define and apply the pixel offsets
         float forwardPixelOffset = 1.5f;
         float rightPixelOffset = 1.5f;
-
-        // Convert pixel offsets to block units
         float forwardOffset = forwardPixelOffset / 16.0f;
         float rightOffset = rightPixelOffset / 16.0f;
 
-        // Get direction vectors
-        Direction rightDir = facing.getClockWise();
+        Direction horizontalOffsetDir = hinge == DoorHingeSide.LEFT ? facing.getClockWise() : facing.getCounterClockWise();
 
-        // Apply offsets based on direction
         pivotX += facing.getStepX() * forwardOffset;
         pivotZ += facing.getStepZ() * forwardOffset;
 
-        pivotX += rightDir.getStepX() * rightOffset;
-        pivotZ += rightDir.getStepZ() * rightOffset;
+        pivotX += horizontalOffsetDir.getStepX() * rightOffset;
+        pivotZ += horizontalOffsetDir.getStepZ() * rightOffset;
 
-        // Apply transformation
+        // 3. Apply transformation
         poseStack.translate(pivotX, 0, pivotZ);
         poseStack.mulPose(Axis.YP.rotationDegrees(rotationAngle));
         poseStack.translate(-pivotX, 0, -pivotZ);
