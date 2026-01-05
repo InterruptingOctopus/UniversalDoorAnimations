@@ -97,49 +97,50 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
         Direction facing = state.getValue(DoorBlock.FACING);
         DoorHingeSide hinge = state.getValue(DoorBlock.HINGE);
 
+        float rotationAngle = hinge == DoorHingeSide.LEFT ? angle : -angle;
+
         float pivotX = 0.0f;
         float pivotZ = 0.0f;
-        float rotationAngle = angle;
 
+        // Calculate the base pivot point (the hinge corner)
         switch (facing) {
-            case EAST:
-                pivotX = 0.0f;
-                if (hinge == DoorHingeSide.LEFT) {
-                    pivotZ = 1.0f;
-                } else { // RIGHT
-                    pivotZ = 0.0f;
-                    rotationAngle = -angle;
-                }
+            case NORTH:
+                pivotZ = 1.0f;
+                pivotX = hinge == DoorHingeSide.RIGHT ? 1.0f : 0.0f;
                 break;
             case SOUTH:
                 pivotZ = 0.0f;
-                if (hinge == DoorHingeSide.LEFT) {
-                    pivotX = 0.0f;
-                } else { // RIGHT
-                    pivotX = 1.0f;
-                    rotationAngle = -angle;
-                }
+                pivotX = hinge == DoorHingeSide.RIGHT ? 0.0f : 1.0f;
                 break;
             case WEST:
                 pivotX = 1.0f;
-                if (hinge == DoorHingeSide.LEFT) {
-                    pivotZ = 0.0f;
-                    rotationAngle = -angle;
-                } else { // RIGHT
-                    pivotZ = 1.0f;
-                }
+                pivotZ = hinge == DoorHingeSide.RIGHT ? 0.0f : 1.0f;
                 break;
-            case NORTH: // default
-                pivotZ = 1.0f;
-                if (hinge == DoorHingeSide.LEFT) {
-                    pivotX = 1.0f;
-                    rotationAngle = -angle;
-                } else { // RIGHT
-                    pivotX = 0.0f;
-                }
+            case EAST:
+                pivotX = 0.0f;
+                pivotZ = hinge == DoorHingeSide.RIGHT ? 1.0f : 0.0f;
                 break;
         }
 
+        // Define offsets in pixels
+        float forwardPixelOffset = 1.5f;
+        float rightPixelOffset = 1.5f;
+
+        // Convert pixel offsets to block units
+        float forwardOffset = forwardPixelOffset / 16.0f;
+        float rightOffset = rightPixelOffset / 16.0f;
+
+        // Get direction vectors
+        Direction rightDir = facing.getClockWise();
+
+        // Apply offsets based on direction
+        pivotX += facing.getStepX() * forwardOffset;
+        pivotZ += facing.getStepZ() * forwardOffset;
+
+        pivotX += rightDir.getStepX() * rightOffset;
+        pivotZ += rightDir.getStepZ() * rightOffset;
+
+        // Apply transformation
         poseStack.translate(pivotX, 0, pivotZ);
         poseStack.mulPose(Axis.YP.rotationDegrees(rotationAngle));
         poseStack.translate(-pivotX, 0, -pivotZ);
@@ -157,24 +158,24 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
 
         switch (facing) {
             case NORTH:
-                poseStack.translate(0.0, pivotY, 1.0);
-                poseStack.mulPose(Axis.XP.rotationDegrees(angle));
-                poseStack.translate(0.0, -pivotY, -1.0);
+                poseStack.translate(0.5, pivotY, 1.0);
+                poseStack.mulPose(Axis.XP.rotationDegrees(-angle));
+                poseStack.translate(-0.5, -pivotY, -1.0);
                 break;
             case SOUTH:
-                poseStack.translate(0.0, pivotY, 0.0);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-angle));
-                poseStack.translate(0.0, -pivotY, 0.0);
+                poseStack.translate(0.5, pivotY, 0.0);
+                poseStack.mulPose(Axis.XP.rotationDegrees(angle));
+                poseStack.translate(-0.5, -pivotY, 0.0);
                 break;
             case WEST:
-                poseStack.translate(1.0, pivotY, 0.0);
+                poseStack.translate(1.0, pivotY, 0.5);
                 poseStack.mulPose(Axis.ZP.rotationDegrees(-angle));
-                poseStack.translate(-1.0, -pivotY, 0.0);
+                poseStack.translate(-1.0, -pivotY, -0.5);
                 break;
             case EAST:
-                poseStack.translate(0.0, pivotY, 0.0);
+                poseStack.translate(0.0, pivotY, 0.5);
                 poseStack.mulPose(Axis.ZP.rotationDegrees(angle));
-                poseStack.translate(0.0, -pivotY, 0.0);
+                poseStack.translate(0.0, -pivotY, -0.5);
                 break;
         }
     }
