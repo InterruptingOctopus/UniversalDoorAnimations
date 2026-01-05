@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -73,13 +74,11 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
             animateTrapDoor(poseStack, state, renderState.angle);
         }
 
-        // Set the flag to true so the mixin knows not to replace the model
         isRendering.set(true);
         BlockStateModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(visualState);
-        // Unset the flag immediately after getting the model
         isRendering.set(false);
 
-        RenderType renderType = ItemBlockRenderTypes.getRenderType(visualState);
+        RenderType renderType = ItemBlockRenderTypes.getMovingBlockRenderType(visualState);
 
         nodeCollector.submitBlockModel(
                 poseStack,
@@ -87,8 +86,8 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
                 model,
                 1.0f, 1.0f, 1.0f,
                 renderState.lightCoords,
-                0,
-                0
+                OverlayTexture.NO_OVERLAY,
+                0 // outlineColor
         );
 
         poseStack.popPose();
@@ -98,34 +97,51 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
         Direction facing = state.getValue(DoorBlock.FACING);
         DoorHingeSide hinge = state.getValue(DoorBlock.HINGE);
 
-        if (hinge == DoorHingeSide.LEFT) {
-            angle = -angle;
-        }
-
-        float pivotX = 0;
-        float pivotZ = 0;
+        float pivotX = 0.0f;
+        float pivotZ = 0.0f;
+        float rotationAngle = angle;
 
         switch (facing) {
-            case NORTH:
-                pivotZ = 1;
-                pivotX = (hinge == DoorHingeSide.LEFT) ? 1 : 0;
+            case EAST:
+                pivotX = 0.0f;
+                if (hinge == DoorHingeSide.LEFT) {
+                    pivotZ = 1.0f;
+                } else { // RIGHT
+                    pivotZ = 0.0f;
+                    rotationAngle = -angle;
+                }
                 break;
             case SOUTH:
-                pivotZ = 0;
-                pivotX = (hinge == DoorHingeSide.LEFT) ? 0 : 1;
+                pivotZ = 0.0f;
+                if (hinge == DoorHingeSide.LEFT) {
+                    pivotX = 0.0f;
+                } else { // RIGHT
+                    pivotX = 1.0f;
+                    rotationAngle = -angle;
+                }
                 break;
             case WEST:
-                pivotX = 1;
-                pivotZ = (hinge == DoorHingeSide.LEFT) ? 0 : 1;
+                pivotX = 1.0f;
+                if (hinge == DoorHingeSide.LEFT) {
+                    pivotZ = 0.0f;
+                    rotationAngle = -angle;
+                } else { // RIGHT
+                    pivotZ = 1.0f;
+                }
                 break;
-            case EAST:
-                pivotX = 0;
-                pivotZ = (hinge == DoorHingeSide.LEFT) ? 1 : 0;
+            case NORTH: // default
+                pivotZ = 1.0f;
+                if (hinge == DoorHingeSide.LEFT) {
+                    pivotX = 1.0f;
+                    rotationAngle = -angle;
+                } else { // RIGHT
+                    pivotX = 0.0f;
+                }
                 break;
         }
 
         poseStack.translate(pivotX, 0, pivotZ);
-        poseStack.mulPose(Axis.YP.rotationDegrees(angle));
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotationAngle));
         poseStack.translate(-pivotX, 0, -pivotZ);
     }
 
@@ -133,28 +149,34 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
         Direction facing = state.getValue(TrapDoorBlock.FACING);
         Half half = state.getValue(TrapDoorBlock.HALF);
 
-        float pivotX = 0.5f;
-        float pivotY;
-        float pivotZ = 0.5f;
+        if (half == Half.TOP) {
+            angle = -angle;
+        }
+
+        float pivotY = (half == Half.BOTTOM) ? 0.0f : 1.0f;
 
         switch (facing) {
-            case NORTH: pivotZ = 1; break;
-            case SOUTH: pivotZ = 0; break;
-            case WEST:  pivotX = 1; break;
-            case EAST:  pivotX = 0; break;
+            case NORTH:
+                poseStack.translate(0.0, pivotY, 1.0);
+                poseStack.mulPose(Axis.XP.rotationDegrees(angle));
+                poseStack.translate(0.0, -pivotY, -1.0);
+                break;
+            case SOUTH:
+                poseStack.translate(0.0, pivotY, 0.0);
+                poseStack.mulPose(Axis.XP.rotationDegrees(-angle));
+                poseStack.translate(0.0, -pivotY, 0.0);
+                break;
+            case WEST:
+                poseStack.translate(1.0, pivotY, 0.0);
+                poseStack.mulPose(Axis.ZP.rotationDegrees(-angle));
+                poseStack.translate(-1.0, -pivotY, 0.0);
+                break;
+            case EAST:
+                poseStack.translate(0.0, pivotY, 0.0);
+                poseStack.mulPose(Axis.ZP.rotationDegrees(angle));
+                poseStack.translate(0.0, -pivotY, 0.0);
+                break;
         }
-        
-        if (half == Half.BOTTOM) pivotY = 0;
-        else pivotY = 1;
-
-        poseStack.translate(pivotX, pivotY, pivotZ);
-
-        if (facing == Direction.NORTH) poseStack.mulPose(Axis.XP.rotationDegrees(angle));
-        else if (facing == Direction.SOUTH) poseStack.mulPose(Axis.XP.rotationDegrees(-angle));
-        else if (facing == Direction.WEST)  poseStack.mulPose(Axis.ZP.rotationDegrees(-angle));
-        else if (facing == Direction.EAST)  poseStack.mulPose(Axis.ZP.rotationDegrees(angle));
-
-        poseStack.translate(-pivotX, -pivotY, -pivotZ);
     }
 
     public static class DoorRenderState extends BlockEntityRenderState {

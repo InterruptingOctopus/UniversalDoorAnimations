@@ -3,7 +3,6 @@ package com.interruptingoctopus.universaldooranimations.common.block.entity;
 import com.interruptingoctopus.universaldooranimations.api.animation.DoorHingeComponent;
 import com.interruptingoctopus.universaldooranimations.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,7 +22,7 @@ public class AnimatedDoorBlockEntity extends BlockEntity {
     /**
      * The server-side tick method for this BlockEntity.
      */
-    public static void tick(Level level, BlockPos pos, BlockState state, AnimatedDoorBlockEntity be) {
+    public static void tick(BlockState state, AnimatedDoorBlockEntity be) {
         boolean isOpen = false;
         if (state.hasProperty(DoorBlock.OPEN)) {
             isOpen = state.getValue(DoorBlock.OPEN);

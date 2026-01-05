@@ -15,20 +15,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ClientLevelMixin {
 
     /**
-     * Injects before and after the addDestroyEffects method in ClientLevel.
+     * Injects before and after the addDestroyBlockEffect method in ClientLevel.
      * This is where the game creates block-breaking particles.
      * We set our ThreadLocal flag to true for the duration of this method,
      * which signals our BlockModelShaperMixin to provide the REAL model
      * instead of the AIR model, allowing correct particles to be generated.
      */
-    @Inject(method = "addDestroyEffects", at = @At("HEAD"))
+    @Inject(method = "addDestroyBlockEffect", at = @At("HEAD"))
     private void beforeAddDestroyEffects(BlockPos pos, BlockState state, CallbackInfo ci) {
         if (state.getBlock() instanceof DoorBlock || state.getBlock() instanceof TrapDoorBlock) {
             IDoorAnimationRenderer.isRendering.set(true);
         }
     }
 
-    @Inject(method = "addDestroyEffects", at = @At("TAIL"))
+    @Inject(method = "addDestroyBlockEffect", at = @At("TAIL"))
     private void afterAddDestroyEffects(BlockPos pos, BlockState state, CallbackInfo ci) {
         if (state.getBlock() instanceof DoorBlock || state.getBlock() instanceof TrapDoorBlock) {
             IDoorAnimationRenderer.isRendering.set(false);

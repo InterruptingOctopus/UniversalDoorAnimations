@@ -30,9 +30,9 @@ public abstract class DoorBlockMixin implements EntityBlock {
             BlockState state,
             BlockEntityType<T> blockEntityType
     ) {
-        if (level != null && !level.isClientSide()) {
+        if (level != null && level.isClientSide()) {
             if (blockEntityType == ModBlockEntities.DOOR_ANIMATION_BE.get()) {
-                return (BlockEntityTicker<T>) (BlockEntityTicker<AnimatedDoorBlockEntity>) AnimatedDoorBlockEntity::tick;
+                return (BlockEntityTicker<T>) (BlockEntityTicker<AnimatedDoorBlockEntity>) (level1, pos, state1, be) -> AnimatedDoorBlockEntity.tick(state1, be);
             }
         }
         return null;
