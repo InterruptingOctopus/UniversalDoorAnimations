@@ -35,4 +35,12 @@ public class DoorHingeComponent {
     public float getInterpolatedAngle(float partialTick) {
         return Mth.lerp(partialTick, this.prevAngle, this.currentAngle);
     }
+
+    /**
+     * Checks if the door is currently animating.
+     * @return True if the angle is changing, false otherwise.
+     */
+    public boolean isAnimating() {
+        return !Mth.equal(this.currentAngle, this.prevAngle);
+    }
 }

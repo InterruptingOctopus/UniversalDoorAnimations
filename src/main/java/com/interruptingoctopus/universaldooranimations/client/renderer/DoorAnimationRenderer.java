@@ -43,15 +43,22 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
             Vec3 cameraPosition,
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress
     ) {
-        BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPosition, breakProgress);
-        renderState.level = blockEntity.getLevel();
-        renderState.pos = blockEntity.getBlockPos();
-        renderState.blockState = blockEntity.getBlockState();
-        renderState.angle = blockEntity.getHinge().getInterpolatedAngle(partialTick);
+        renderState.isAnimating = blockEntity.getHinge().isAnimating();
+        if (renderState.isAnimating) {
+            BlockEntityRenderer.super.extractRenderState(blockEntity, renderState, partialTick, cameraPosition, breakProgress);
+            renderState.level = blockEntity.getLevel();
+            renderState.pos = blockEntity.getBlockPos();
+            renderState.blockState = blockEntity.getBlockState();
+            renderState.angle = blockEntity.getHinge().getInterpolatedAngle(partialTick);
+        }
     }
 
     @Override
     public void submit(DoorRenderState renderState, PoseStack poseStack, SubmitNodeCollector nodeCollector, CameraRenderState cameraRenderState) {
+        if (!renderState.isAnimating) {
+            return;
+        }
+
         Level level = renderState.level;
         BlockState state = renderState.blockState;
 
@@ -181,5 +188,6 @@ public class DoorAnimationRenderer implements BlockEntityRenderer<AnimatedDoorBl
         @Nullable public BlockPos pos;
         @Nullable public BlockState blockState;
         public float angle;
+        public boolean isAnimating;
     }
 }
