@@ -1,7 +1,6 @@
 package com.interruptingoctopus.universaldooranimations.mixin;
 
 import com.interruptingoctopus.universaldooranimations.init.ModBlockEntities;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -13,12 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BlockEntityType.class)
 public class BlockEntityTypeMixin {
-    
     @Inject(method = "isValid", at = @At("HEAD"), cancellable = true)
-    private void isValid(BlockState state, CallbackInfoReturnable<Boolean> cir) {
-        if ((Object)this == ModBlockEntities.DOOR_ANIMATION_BE.get()) {
-            Block block = state.getBlock();
-            if (block instanceof DoorBlock || block instanceof TrapDoorBlock) {
+    private void onIsValid(BlockState state, CallbackInfoReturnable<Boolean> cir) {
+        if ((Object) this == ModBlockEntities.DOOR_ANIMATION_BE.get()) {
+            if (state.getBlock() instanceof DoorBlock || 
+                state.getBlock() instanceof TrapDoorBlock) {
                 cir.setReturnValue(true);
             }
         }

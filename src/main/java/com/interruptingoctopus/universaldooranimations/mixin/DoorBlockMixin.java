@@ -13,6 +13,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 
+/**
+ * Mixin to attach a Block Entity to the vanilla DoorBlock.
+ */
 @Mixin(DoorBlock.class)
 public abstract class DoorBlockMixin implements EntityBlock {
 
@@ -24,15 +27,18 @@ public abstract class DoorBlockMixin implements EntityBlock {
 
     @Nullable
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            @Nullable Level level,
+            Level level,
             BlockState state,
             BlockEntityType<T> blockEntityType
     ) {
-        if (level != null && level.isClientSide()) {
+        if (level.isClientSide()) {
             if (blockEntityType == ModBlockEntities.DOOR_ANIMATION_BE.get()) {
-                return (BlockEntityTicker<T>) (BlockEntityTicker<AnimatedDoorBlockEntity>) (level1, pos, state1, be) -> AnimatedDoorBlockEntity.tick(state1, be);
+                return (level1, pos, state1, be) -> {
+                    if (be instanceof AnimatedDoorBlockEntity animatedDoor) {
+                        animatedDoor.clientTick();
+                    }
+                };
             }
         }
         return null;

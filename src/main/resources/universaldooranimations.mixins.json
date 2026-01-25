@@ -5,9 +5,8 @@
   "refmap": "universaldooranimations.refmap.json",
   "mixins": [
     "BlockEntityTypeMixin",
-    "ClientLevelMixin",
-    "DoorBlockMixin",
     "BlockRenderDispatcherMixin",
+    "DoorBlockMixin",
     "TrapDoorBlockMixin"
   ],
   "injectors": {
